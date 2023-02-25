@@ -1,16 +1,28 @@
-import './models/transaction.dart';
+import 'package:expanses/components/transactions_form.dart';
 import 'package:flutter/material.dart';
+
+import 'dart:math';
+import 'components/transaction_list.dart';
+import 'components/transactions_form.dart';
+import 'models/transaction.dart';
 
 main() => runApp(ExpansesApp());
 
 class ExpansesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: MyHomePag());
+    return MaterialApp(
+      home: MyHomePag(),
+    );
   }
 }
 
-class MyHomePag extends StatelessWidget {
+class MyHomePag extends StatefulWidget {
+  @override
+  State<MyHomePag> createState() => _MyHomePagState();
+}
+
+class _MyHomePagState extends State<MyHomePag> {
   final _transactions = [
     Transaction(
       id: 't1',
@@ -26,14 +38,49 @@ class MyHomePag extends StatelessWidget {
     )
   ];
 
+  _addTransaction(String title, double value) {
+    final newTransaction = Transaction(
+      id: Random().nextDouble().toString(),
+      title: title,
+      value: value,
+      date: DateTime.now(),
+    );
+
+    setState(() {
+      _transactions.add(newTransaction);
+    });
+  }
+
+  _opentransactionFormModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (_) {
+        return TransactionForm(_addTransaction);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Despesas Pessoais'),
+        backgroundColor: Colors.yellow,
+        title: Text(
+          'Despesas Pessoais',
+          style: TextStyle(color: Colors.black),
+        ),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              Icons.add,
+              color: Colors.black,
+            ),
+            onPressed: () => _opentransactionFormModal(context),
+          ),
+        ],
       ),
-      body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             Container(
@@ -43,55 +90,19 @@ class MyHomePag extends StatelessWidget {
                 elevation: 5,
               ),
             ),
-            Column(
-              children: _transactions.map((tr) {
-                return Card(
-                  child: Row(
-                    children: <Widget>[
-                      Container(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: 15,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(
-                              color: Colors.blue,
-                              width: 2,
-                            )),
-                        padding: EdgeInsets.all(10),
-                        child: Text('R\$ ${tr.value.toStringAsFixed(2)}',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.green)),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            tr.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            tr.date.toString(),
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Color.fromARGB(255, 99, 98, 98),
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  ),
-                );
-              }).toList(),
-            )
-          ]),
+            TransactionList(_transactions),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.yellow,
+        child: Icon(
+          Icons.add,
+          color: Colors.black,
+        ),
+        onPressed: () => _opentransactionFormModal(context),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
